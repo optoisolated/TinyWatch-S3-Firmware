@@ -52,6 +52,7 @@ class SettingsOptionBase
 		void register_option(int grp);
 
 		String fieldname = "";
+		String fn = "";
 		int group = -1;
 		bool data_is_vector = false;
 		bool req_full_width = false;
@@ -72,8 +73,8 @@ class SettingsOptionInt : public SettingsOptionBase
 			return INT;
 		}
 
-		int change(int dir);
-		bool update(int val);
+		int change(int dir, bool no_save=false);
+		bool update(int val, bool no_save=false);
 		int get();
 		String get_str();
 		String generate_html(uint16_t index);
@@ -100,8 +101,8 @@ class SettingsOptionIntRange : public SettingsOptionBase
 			return INT_RANGE;
 		}
 
-		int change(int dir);
-		bool update(int val);
+		int change(int dir, bool no_save=false);
+		bool update(int val, bool no_save=false);
 		int get();
 		String get_str();
 		String generate_html(uint16_t index);
@@ -130,8 +131,8 @@ class SettingsOptionIntVector : public SettingsOptionBase
 			return INT_VECTOR;
 		}
 
-		int change(int index, int dir);
-		bool update(int index, int val);
+		int change(int index, int dir, bool no_save=false);
+		bool update(int index, int val, bool no_save=false);
 		int get(int index);
 		String get_str(int index);
 		String generate_html(uint16_t index);
@@ -162,8 +163,8 @@ class SettingsOptionFloat : public SettingsOptionBase
 			return FLOAT;
 		}
 
-		float change(int dir);
-		bool update(float val);
+		float change(int dir, bool no_save=false);
+		bool update(float val, bool no_save=false);
 		float get();
 		String get_str();
 		String generate_html(uint16_t index);
@@ -191,8 +192,8 @@ class SettingsOptionBool : public SettingsOptionBase
 			return BOOL;
 		}
 
-		bool change();
-		bool update(bool val);
+		bool change(bool no_save=false);
+		bool update(bool val, bool no_save=false);
 		bool get();
 		String get_str();
 		String get_fn();
@@ -223,8 +224,8 @@ class SettingsOptionString : public SettingsOptionBase
 			return STRING;
 		}
 
-		void change(String *val);
-		bool update(String *val);
+		void change(const String& val, bool no_save=false);
+		bool update(const String& val, bool no_save=false);
 		String get();
 		String generate_html(uint16_t index);
 
@@ -251,7 +252,7 @@ class SettingsOptionWiFiStations : public SettingsOptionBase
 			return WIFI_STATION;
 		}
 
-		bool update(int index, String _ssid, String _pass);
+		bool update(int index, String _ssid, String _pass, bool no_save=false);
 		void remove_if_empty();
 		String get_ssid(int index);
 		String get_pass(int index);

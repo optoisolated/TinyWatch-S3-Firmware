@@ -31,22 +31,7 @@ const char index_html[] PROGMEM = R"rawliteral(
 
 		%FOOTER%
 
-		<script>
-			document.addEventListener('htmx:afterSwap', function(evt) {
-				// Ensure the target container is one of the form containers
-				if (evt.detail.target.id.startsWith("settings_group_")) {
-					var flashSpan = evt.detail.target.querySelector('.flash-span');
-					if (flashSpan) {
-						flashSpan.style.display = 'inline';
-						flashSpan.classList.add('flash_post');
-						setTimeout(function() {
-							flashSpan.classList.remove('flash_post');
-							flashSpan.style.display = 'none';
-						}, 1000); // Adjust the duration as needed
-					}
-				}
-			});
-		</script>
+ 		%WEBFORM_DYNAMIC_JS%
 
 )rawliteral";
 

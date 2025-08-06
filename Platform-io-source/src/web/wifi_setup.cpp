@@ -147,14 +147,21 @@ void WifiSetup::start()
 					pass = passParam->value();
 					BuzzerUI({{2000, 50}});
 					update_wifisetup_status("CONNECTING...", RGB(0xff, 0xc9, 0x00));
-					if (WiFi.begin(ssidParam->value().c_str(), passParam->value().c_str()) == WL_CONNECT_FAILED)
+					// if (WiFi.begin(ssidParam->value().c_str(), passParam->value().c_str()) == WL_CONNECT_FAILED)
+					// {
+					// 	WiFi.setStatus(WL_CONNECT_FAILED);
+					// }
+					// else
+					// {
+					// 	WiFi.setStatus(WL_IDLE_STATUS);
+					// }
+					WiFi.begin(ssidParam->value().c_str(), passParam->value().c_str());
+					if (WiFi.waitForConnectResult(10000) != WL_CONNECTED)
 					{
-						WiFi._setStatus(WL_CONNECT_FAILED);
+						info_printf("WiFi Failed!\n");
+						return;
 					}
-					else
-					{
-						WiFi._setStatus(WL_IDLE_STATUS);
-					}
+
 					String html = String(startHtml) + connectingHtml;
 					html.replace("{ssid}", ssidParam->value());
 					request->send(200, "text/html", html);

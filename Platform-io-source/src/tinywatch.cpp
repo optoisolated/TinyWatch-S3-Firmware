@@ -81,8 +81,6 @@ void setup()
 
 	display.init_screen();
 
-	analogWriteResolution(8);
-
 	Wire.begin(8, 9);
 
 	// Initialise the Buzzer
@@ -343,7 +341,7 @@ void loop()
 	display.update_rotation();
 	// Constantly call saving settting
 	// If it's been less than 1mins, or there's nothing to save, it wil bail
-	settings.save(false);
+	settings.save(settings.needs_saving);
 
 	if (settings.config.imu_process_steps)
 	{

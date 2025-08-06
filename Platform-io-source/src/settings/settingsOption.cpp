@@ -22,7 +22,7 @@ void SettingsOptionBase::register_option(int grp)
 //
 // INT
 //
-int SettingsOptionInt::change(int dir)
+int SettingsOptionInt::change(int dir, bool no_save)
 {
 	int current = *setting_ref;
 	current += dir;
@@ -39,18 +39,22 @@ int SettingsOptionInt::change(int dir)
 	}
 
 	*setting_ref = current;
-	settings.save(true);
+
+	if (!no_save)
+		settings.save(true);
 	// info_println("int: "+String(*setting_ref));
 	return *setting_ref;
 }
 
-bool SettingsOptionInt::update(int val)
+bool SettingsOptionInt::update(int val, bool no_save)
 {
 	if (*setting_ref == val)
 		return false;
 
 	*setting_ref = val;
-	settings.save(false);
+
+	if (!no_save)
+		settings.save(false);
 
 	return true;
 }
@@ -61,13 +65,16 @@ String SettingsOptionInt::get_str() { return String(*setting_ref); }
 
 String SettingsOptionInt::generate_html(uint16_t index)
 {
-	String fn = fieldname;
-	fn.replace(" ", "_");
-	fn.toLowerCase();
-	fn.replace("_(sec)", "");
-	fn.replace("_(min)", "");
-	fn.replace("_(%%)", "");
-	fn = String(group) + "," + String(index) + "__" + fn;
+	if (fn.isEmpty())
+	{
+		fn = fieldname;
+		fn.replace(" ", "_");
+		fn.toLowerCase();
+		fn.replace("_(sec)", "");
+		fn.replace("_(min)", "");
+		fn.replace("_(%%)", "");
+		fn = String(group) + "," + String(index) + "__" + fn;
+	}
 
 	String html = "					<div class='input-group input-group-sm'>\n";
 	html += "						<span class='input-group-text' id='inputGroup-sizing-sm'>" + fieldname + "</span>\n";
@@ -88,7 +95,7 @@ String SettingsOptionInt::generate_html(uint16_t index)
 //
 // INT RANGE
 //
-int SettingsOptionIntRange::change(int dir)
+int SettingsOptionIntRange::change(int dir, bool no_save)
 {
 	int current = *setting_ref;
 	current += (dir * value_step);
@@ -105,18 +112,22 @@ int SettingsOptionIntRange::change(int dir)
 	}
 
 	*setting_ref = current;
-	settings.save(true);
+
+	if (!no_save)
+		settings.save(true);
 	// info_println("int: "+String(*setting_ref));
 	return *setting_ref;
 }
 
-bool SettingsOptionIntRange::update(int val)
+bool SettingsOptionIntRange::update(int val, bool no_save)
 {
 	if (*setting_ref == val)
 		return false;
 
 	*setting_ref = val;
-	settings.save(false);
+
+	if (!no_save)
+		settings.save(false);
 
 	return true;
 }
@@ -127,13 +138,16 @@ String SettingsOptionIntRange::get_str() { return String(constrain(*setting_ref,
 
 String SettingsOptionIntRange::generate_html(uint16_t index)
 {
-	String fn = fieldname;
-	fn.replace(" ", "_");
-	fn.toLowerCase();
-	fn.replace("_(sec)", "");
-	fn.replace("_(min)", "");
-	fn.replace("_(%%)", "");
-	fn = String(group) + "," + String(index) + "__" + fn;
+	if (fn.isEmpty())
+	{
+		fn = fieldname;
+		fn.replace(" ", "_");
+		fn.toLowerCase();
+		fn.replace("_(sec)", "");
+		fn.replace("_(min)", "");
+		fn.replace("_(%%)", "");
+		fn = String(group) + "," + String(index) + "__" + fn;
+	}
 
 	String html = "					<div class='input-group input-group-sm flex-nowrap'>\n";
 	html += "						<span class='input-group-text' id='inputGroup-sizing-sm'>" + fieldname + "</span>\n";
@@ -155,7 +169,7 @@ String SettingsOptionIntRange::generate_html(uint16_t index)
 //
 // INT VECTOR
 //
-int SettingsOptionIntVector::change(int index, int dir)
+int SettingsOptionIntVector::change(int index, int dir, bool no_save)
 {
 	int current = (*setting_ref)[index];
 	current += (dir * value_step);
@@ -172,19 +186,23 @@ int SettingsOptionIntVector::change(int index, int dir)
 	}
 
 	(*setting_ref)[index] = current;
-	settings.save(true);
+
+	if (!no_save)
+		settings.save(true);
 
 	return (*setting_ref)[index];
 }
 
-bool SettingsOptionIntVector::update(int index, int val)
+bool SettingsOptionIntVector::update(int index, int val, bool no_save)
 {
 	int current = (*setting_ref)[index];
 	if (current == val)
 		return false;
 
 	(*setting_ref)[index] = val;
-	settings.save(false);
+
+	if (!no_save)
+		settings.save(false);
 
 	return true;
 }
@@ -196,13 +214,16 @@ String SettingsOptionIntVector::get_str(int index) { return String((*setting_ref
 
 String SettingsOptionIntVector::generate_html(uint16_t index)
 {
-	String fn = fieldname;
-	fn.replace(" ", "_");
-	fn.toLowerCase();
-	fn.replace("_(sec)", "");
-	fn.replace("_(min)", "");
-	fn.replace("_(%%)", "");
-	fn = String(group) + "," + String(index) + "__" + fn;
+	if (fn.isEmpty())
+	{
+		fn = fieldname;
+		fn.replace(" ", "_");
+		fn.toLowerCase();
+		fn.replace("_(sec)", "");
+		fn.replace("_(min)", "");
+		fn.replace("_(%%)", "");
+		fn = String(group) + "," + String(index) + "__" + fn;
+	}
 
 	String html = "					<div class='input-group input-group-sm mb-1'>\n";
 	html += "						<div class='row g-2'>\n";
@@ -220,18 +241,10 @@ String SettingsOptionIntVector::generate_html(uint16_t index)
 	return html;
 }
 
-// void SettingsOptionIntVector::register_option(int grp)
-// {
-// 	if (settings.settings_groups[grp].groups.size() < grp + 1)
-// 		settings.settings_groups[grp].groups.push_back({});
-
-// 	settings.settings_groups[grp].groups.push_back(this);
-// }
-
 //
 // FLOAT
 //
-float SettingsOptionFloat::change(int dir)
+float SettingsOptionFloat::change(int dir, bool no_save)
 {
 	int current = *setting_ref;
 	current += ((float)dir * value_step);
@@ -249,17 +262,21 @@ float SettingsOptionFloat::change(int dir)
 
 	// info_println("float: "+String(*setting_ref));
 	*setting_ref = current;
-	settings.save(true);
+
+	if (!no_save)
+		settings.save(true);
 	return *setting_ref;
 }
 
-bool SettingsOptionFloat::update(float val)
+bool SettingsOptionFloat::update(float val, bool no_save)
 {
 	if (*setting_ref == val)
 		return false;
 
 	*setting_ref = val;
-	settings.save(false);
+
+	if (!no_save)
+		settings.save(false);
 
 	return true;
 }
@@ -284,22 +301,26 @@ String SettingsOptionFloat::generate_html(uint16_t index)
 //
 // BOOL
 //
-bool SettingsOptionBool::change()
+bool SettingsOptionBool::change(bool no_save)
 {
 	*setting_ref = !*setting_ref;
 	// settings.ui_forced_save = true;
-	settings.save(true);
+
+	if (!no_save)
+		settings.save(true);
 	// info_println("bool: " + String(*setting_ref));
 	return *setting_ref;
 }
 
-bool SettingsOptionBool::update(bool val)
+bool SettingsOptionBool::update(bool val, bool no_save)
 {
 	if (*setting_ref == val)
 		return false;
 
 	*setting_ref = val;
-	settings.save(false);
+
+	if (!no_save)
+		settings.save(false);
 
 	return true;
 }
@@ -314,13 +335,16 @@ String SettingsOptionBool::get_op2() { return option2; }
 
 String SettingsOptionBool::generate_html(uint16_t index)
 {
-	String fn = fieldname;
-	fn.replace(" ", "_");
-	fn.toLowerCase();
-	fn.replace("_(sec)", "");
-	fn.replace("_(min)", "");
-	fn.replace("_(%%)", "");
-	fn = String(group) + "," + String(index) + "__" + fn;
+	if (fn.isEmpty())
+	{
+		fn = fieldname;
+		fn.replace(" ", "_");
+		fn.toLowerCase();
+		fn.replace("_(sec)", "");
+		fn.replace("_(min)", "");
+		fn.replace("_(%%)", "");
+		fn = String(group) + "," + String(index) + "__" + fn;
+	}
 
 	String html = "					<div class='input-group input-group-sm'>\n";
 	html += "						<span class='input-group-text' id='inputGroup-sizing-sm'>" + fieldname + "</span>\n";
@@ -351,21 +375,24 @@ String SettingsOptionBool::generate_html(uint16_t index)
 //
 // STRING
 //
-void SettingsOptionString::change(String *val)
+void SettingsOptionString::change(const String& val, bool no_save)
 {
-	setting_ref = val;
-	settings.save(true);
+	*setting_ref = val;
+	if (!no_save)
+		settings.save(true);
 }
 
-bool SettingsOptionString::update(String *val)
+bool SettingsOptionString::update(const String& val, bool no_save)
 {
-	if (*setting_ref == *val)
-		return false;
+    if (*setting_ref == val)
+        return false;
 
-	*setting_ref = *val;
-	settings.save(false);
+    *setting_ref = val;
 
-	return true;
+	if (!no_save)
+   		settings.save(false);
+
+    return true;
 }
 
 String SettingsOptionString::get() { return *setting_ref; }
@@ -374,13 +401,16 @@ String SettingsOptionString::generate_html(uint16_t index)
 {
 	// return "<div><span>SettingsOptionString for " + fieldname + "</span></div>";
 
-	String fn = fieldname;
-	fn.replace(" ", "_");
-	fn.toLowerCase();
-	fn.replace("_(sec)", "");
-	fn.replace("_(min)", "");
-	fn.replace("_(%%)", "");
-	fn = String(group) + "," + String(index) + "__" + fn;
+	if (fn.isEmpty())
+	{
+		fn = fieldname;
+		fn.replace(" ", "_");
+		fn.toLowerCase();
+		fn.replace("_(sec)", "");
+		fn.replace("_(min)", "");
+		fn.replace("_(%%)", "");
+		fn = String(group) + "," + String(index) + "__" + fn;
+	}
 
 	String html = "					<div class='input-group input-group-sm'>\n";
 	html += "						<span class='input-group-text' id='inputGroup-sizing-sm'>" + fieldname + "</span>\n";
@@ -402,11 +432,13 @@ String SettingsOptionString::generate_html(uint16_t index)
 // WIFI STATIONS
 //
 
-bool SettingsOptionWiFiStations::update(int index, String _ssid, String _pass)
+bool SettingsOptionWiFiStations::update(int index, String _ssid, String _pass, bool no_save)
 {
 	(*setting_ref)[index].ssid = _ssid;
 	(*setting_ref)[index].pass = _pass;
-	settings.save(false);
+
+	if (!no_save)
+		settings.save(false);
 
 	return true;
 }
@@ -434,10 +466,13 @@ void SettingsOptionWiFiStations::add_station(String ssid, String pass)
 
 String SettingsOptionWiFiStations::generate_html(uint16_t index)
 {
-	String fn = fieldname;
-	fn.replace(" ", "_");
-	fn.toLowerCase();
-	fn = String(group) + "," + String(index) + "__" + fn;
+	if (fn.isEmpty())
+	{
+		fn = fieldname;
+		fn.replace(" ", "_");
+		fn.toLowerCase();
+		fn = String(group) + "," + String(index) + "__" + fn;
+	}
 
 	String html = "					<div class='input-group input-group-sm mb-1'>\n";
 	html += "						<div class='row g-2'>\n";
@@ -588,10 +623,13 @@ uint16_t SettingsOptionTheme::hexToRgb565(String hexColor)
 
 String SettingsOptionTheme::generate_html(uint16_t index)
 {
-	String fn = fieldname;
-	fn.replace(" ", "_");
-	fn.toLowerCase();
-	fn = String(group) + "," + String(index) + "__" + fn;
+	if (fn.isEmpty())
+	{
+		fn = fieldname;
+		fn.replace(" ", "_");
+		fn.toLowerCase();
+		fn = String(group) + "," + String(index) + "__" + fn;
+	}
 
 	String highlight = "";
 	String readonly = "required";

@@ -29,5 +29,6 @@ const char index_settings_apps_html[] PROGMEM = R"rawliteral(
 			</div>
 
 		%FOOTER%
+		
 
 )rawliteral";

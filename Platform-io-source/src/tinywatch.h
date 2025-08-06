@@ -47,7 +47,7 @@ class TinyWATCH
 		bool block_update_low_battery = false;
 		unsigned long low_battery_update_check = 0;
 
-		const String version_firmware = "Alpha v0.67";
+		const String version_firmware = "Alpha v0.68";
 		const String version_year = "2025";
 		const uint16_t version_build = 3;
 		uint16_t version_latest = 0;

@@ -24,6 +24,10 @@ String WebServer::processor(const String &var)
 	{
 		return String(footer);
 	}
+	else if (var == "WEBFORM_DYNAMIC_JS")
+	{
+		return String(web_form_dynamic_js);
+	}
 	else if (var == "THEME")
 	{
 		if (settings.config.website_darkmode)
@@ -128,7 +132,7 @@ String WebServer::generate_settings_html(int group_id)
 
 	String group_id_str = String(group_id);
 
-	String html = "\n<div id='settings_group_" + group_id_str + "'>\n";
+	String html = "\n<div class='settings_group' id='settings_group_" + group_id_str + "'>\n";
 	html += "	<span class='settings_heading'>" + group_name.name + "</span>\n";
 	html += "	<div class='settings_frame' id='group_" + group_id_str + "' style='margin-bottom:15px; padding-bottom:5px;'>\n";
 
@@ -139,7 +143,8 @@ String WebServer::generate_settings_html(int group_id)
 		html += "		</div>\n";
 	}
 
-	html += "		<form hx-post='/update_settings_group' hx-target='#settings_group_" + group_id_str + "' >\n";
+	
+	html += "		<form class='ajax-settings-form' action='/update_settings_group' method='POST'>\n";
 	html += "			<input type='hidden' name='group_id' id='group_id' value='" + group_id_str + "'>\n";
 	html += "			<div class ='row'>\n";
 
@@ -369,29 +374,12 @@ void WebServer::start_callback(bool success, const String &response)
 
 		web_server.onNotFound([](AsyncWebServerRequest *request) { request->send(404, "text/plain", "Not found"); });
 
-		// web_server.on("/update_widget_ow", HTTP_POST, [](AsyncWebServerRequest *request) {
-		// 	AsyncWebParameter *ow_enable = request->getParam("_set_widget_ow_enable", true);
-		// 	settings.config.open_weather.enabled = (String(ow_enable->value().c_str()) == "1");
-
-		// 	AsyncWebParameter *ow_api_key = request->getParam("_set_widget_ow_api_key", true);
-		// 	settings.config.open_weather.api_key = String(ow_api_key->value().c_str());
-		// 	settings.config.open_weather.api_key.trim();
-
-		// 	AsyncWebParameter *ow_poll_frequency = request->getParam("_set_widget_ow_poll_frequency", true);
-		// 	settings.config.open_weather.poll_frequency = String(ow_poll_frequency->value().c_str()).toInt();
-
-		// 	info_println("Widget OW Save!");
-
-		// 	Buzzer({{2000, 100}});
-		// 	request->send(200, "text/plain", "Settings Saved!");
-		// });
-
 		web_server.on("/update_settings_group", HTTP_POST, [](AsyncWebServerRequest *request) {
 			if (request->hasParam("group_id", true))
 			{
-				AsyncWebParameter *_group = request->getParam("group_id", true);
-				info_printf("** Save Settings for Group ID: %s\n", String(_group->value().c_str()));
-				uint8_t group_id = String(_group->value().c_str()).toInt();
+				const AsyncWebParameter *_group = request->getParam("group_id", true);
+				info_printf("** Save Settings for Group ID: %s\n", _group->value().c_str());
+				uint8_t group_id = atoi(_group->value().c_str());
 
 				auto &group = settings.settings_groups[group_id]; // Cache the current group
 
@@ -417,12 +405,11 @@ void WebServer::start_callback(bool success, const String &response)
 
 							if (request->hasParam(fn_indexed, true))
 							{
-								// info_print("Found - ");
-								AsyncWebParameter *_param = request->getParam(fn_indexed, true);
-								int data = String(_param->value().c_str()).toInt();
+								const AsyncWebParameter *_param = request->getParam(fn_indexed, true);
+								int data = atoi(_param->value().c_str());
 
 								// info_printf("Web data: %d, class data %d, change? %s\n", data, intPtr->get(v), (intPtr->update(v, data) ? "YES" : "no"));
-								intPtr->update(v, data);
+								intPtr->update(v, data, true);
 							}
 						}
 					}
@@ -438,10 +425,10 @@ void WebServer::start_callback(bool success, const String &response)
 							if (request->hasParam(fn_ssid, true) && request->hasParam(fn_pass, true))
 							{
 								// info_print("Found - ");
-								AsyncWebParameter *_param1 = request->getParam(fn_ssid, true);
+								const AsyncWebParameter *_param1 = request->getParam(fn_ssid, true);
 								String data1 = String(_param1->value().c_str());
 
-								AsyncWebParameter *_param2 = request->getParam(fn_pass, true);
+								const AsyncWebParameter *_param2 = request->getParam(fn_pass, true);
 								String data2 = String(_param2->value().c_str());
 
 								data1.trim();
@@ -457,7 +444,7 @@ void WebServer::start_callback(bool success, const String &response)
 								{
 									// We update all stations, even with empty data, to ensure we keep the vector intact
 									// after the updates, we'll prune any that are empty.
-									intPtr->update(v, data1, data2);
+									intPtr->update(v, data1, data2, true);
 								}
 							}
 						}
@@ -473,47 +460,43 @@ void WebServer::start_callback(bool success, const String &response)
 
 						if (request->hasParam(fn_indexed, true))
 						{
-							AsyncWebParameter *_param = request->getParam(fn_indexed, true);
+							const AsyncWebParameter *_param = request->getParam(fn_indexed, true);
 
 							if (setting->getType() == SettingsOptionBase::BOOL)
 							{
-								bool data = (String(_param->value().c_str()) == "1");
+								bool data = (atoi(_param->value().c_str()) == 1);
 								SettingsOptionBool *intPtr = static_cast<SettingsOptionBool *>(setting);
 
-								// info_printf("Web data (new): %s, class data (current): %s - ", (data ? "T" : "F"), (intPtr->get() ? "T" : "F"));
-								bool updated = intPtr->update(data);
-								// info_printf("Now: %s - changed? %s\n", (intPtr->get() ? "T" : "F"), (updated ? "YES" : "no"));
+								bool updated = intPtr->update(data, true);
 							}
 							else if (setting->getType() == SettingsOptionBase::FLOAT)
 							{
-								float data = String(_param->value().c_str()).toFloat();
+								float data = atof(_param->value().c_str());
 								SettingsOptionFloat *intPtr = static_cast<SettingsOptionFloat *>(setting);
-								// info_printf("Web data: %f, class data %f - ", data, intPtr->get());
-								bool updated = intPtr->update(data);
-								// info_printf("changed? %s\n", (updated ? "YES" : "no"));
+								bool updated = intPtr->update(data, true);
 							}
 							else if (setting->getType() == SettingsOptionBase::STRING)
 							{
 								String data = String(_param->value().c_str());
 								SettingsOptionString *intPtr = static_cast<SettingsOptionString *>(setting);
 								// info_printf("Web data: %s, class data %s - ", data, intPtr->get());
-								bool updated = intPtr->update(&data);
+								bool updated = intPtr->update(data, true);
 								// info_printf("changed? %s\n", (updated ? "YES" : "no"));
 							}
 							else if (setting->getType() == SettingsOptionBase::INT)
 							{
-								int data = String(_param->value().c_str()).toInt();
+								int data = atoi(_param->value().c_str());
 								SettingsOptionInt *intPtr = static_cast<SettingsOptionInt *>(setting);
 								// info_printf("Web data: %d, class data %d - ", data, intPtr->get());
-								bool updated = intPtr->update(data);
+								bool updated = intPtr->update(data, true);
 								// info_printf("changed? %s\n", (updated ? "YES" : "no"));
 							}
 							else if (setting->getType() == SettingsOptionBase::INT_RANGE)
 							{
-								int data = String(_param->value().c_str()).toInt();
+								int data = atoi(_param->value().c_str());
 								SettingsOptionIntRange *intPtr = static_cast<SettingsOptionIntRange *>(setting);
 								// info_printf("Web data: %d, class data %d - ", data, intPtr->get());
-								bool updated = intPtr->update(data);
+								bool updated = intPtr->update(data, true);
 								// info_printf("changed? %s\n", (updated ? "YES" : "no"));
 							}
 							// info_printf("Data: %s\n", String(_param->value().c_str()));
@@ -523,75 +506,29 @@ void WebServer::start_callback(bool success, const String &response)
 				}
 
 				Buzzer({{2000, 20}});
-				settings.save(true);
-				request->send_P(200, "text/html", generate_settings_html(group_id).c_str(), processor);
+				settings.needs_saving = true;
+
+				String html = generate_settings_html(group_id);
+				const char *return_data = html.c_str();
+
+				const size_t return_data_length = strlen_P(return_data);
+
+				delay(10);
+
+				AsyncResponseStream *response = request->beginResponseStream("text/html", return_data_length);
+				for (int i = 0; i < return_data_length; i++)
+				{
+					response->write(return_data[i]);
+				}
+				request->send(response);
+
+				// request->send_P(200, "text/html", generate_settings_html(group_id).c_str(), processor);
 			}
 			else
 			{
 				request->send_P(200, "text/html", "<div class='container'><h2>ERROR POSTING DATA</h2><div>", processor);
 			}
 		});
-
-		// web_server.on("/update_settings_watch", HTTP_POST, [](AsyncWebServerRequest *request) {
-		// 	for (size_t g = 0; g < settings.setting_groups.size(); g++)
-		// 	{
-		// 		auto &group = settings.setting_groups[g]; // Cache the current group
-		// 		for (size_t i = 0; i < group.size(); ++i)
-		// 		{
-		// 			auto *setting = group[i]; // Cache the current setting
-
-		// 			String fn = setting->fieldname;
-		// 			fn.replace(" ", "_");
-		// 			fn.toLowerCase();
-		// 			fn.replace("_(sec)", "");
-		// 			fn.replace("_(%%)", "");
-
-		// 			if (setting->getType() != SettingsOptionBase::INT_VECTOR)
-		// 			{
-		// 				fn = String(g) + "," + String(i) + "__" + fn;
-
-		// 				info_printf("Looking for id: %s - ", fn.c_str());
-
-		// 				if (request->hasParam(fn, true))
-		// 				{
-		// 					info_print("Found - ");
-		// 					AsyncWebParameter *_param = request->getParam(fn, true);
-		// 					info_printf("Data: %s\n", String(_param->value().c_str()));
-		// 					// 	settings.config.look_ahead = String(_set_reflow_lookahead->value().c_str()).toInt();
-		// 				}
-		// 				else
-		// 				{
-		// 					info_println("...");
-		// 				}
-		// 			}
-		// 			else
-		// 			{
-		// 				SettingsOptionIntVector *intPtr = static_cast<SettingsOptionIntVector *>(setting);
-		// 				for (size_t v = 0; v < intPtr->vector_size(); v++)
-		// 				{
-		// 					String fn_indexed = String(g) + "," + String(i) + "__" + fn + "_" + String(v);
-
-		// 					info_printf("Looking for id: %s - ", fn_indexed.c_str());
-
-		// 					if (request->hasParam(fn_indexed, true))
-		// 					{
-		// 						info_print("Found - ");
-		// 						AsyncWebParameter *_param = request->getParam(fn_indexed, true);
-		// 						info_printf("Data: %s\n", String(_param->value().c_str()));
-		// 						// 	settings.config.look_ahead = String(_set_reflow_lookahead->value().c_str()).toInt();
-		// 					}
-		// 					else
-		// 					{
-		// 						info_println("...");
-		// 					}
-		// 				}
-		// 			}
-		// 		}
-		// 	}
-
-		// 	Buzzer({{2000, 20}});
-		// 	request->send(200, "text/plain", "Settings Saved!");
-		// });
 
 		info_println("web_server.begin();");
 		web_server.begin();

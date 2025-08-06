@@ -218,6 +218,7 @@ class Settings
 		SettingsOptionTheme watch_themes{&themes.watch_themes.themes, 7, "Colour Themes"};
 
 		bool ui_forced_save = false; //
+		bool needs_saving = false;
 
 	private:
 		static constexpr const char *filename = "/settings.json";

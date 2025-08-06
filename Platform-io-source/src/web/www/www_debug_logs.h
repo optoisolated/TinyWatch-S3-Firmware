@@ -13,11 +13,13 @@ const char debug_logs_html[] PROGMEM = R"rawliteral(
 
 			<div class="content" style="margin:30px;">
 				<div class="row">
-					<div class='col-3'>&nbsp;</div>
+					<div class='col-1'>&nbsp;</div>
 					<div class='col-2 center'><a href='/index.html'><button class='btn btn-sm btn-outline-primary' style='width:130px;'>WATCH</button></a></div>
+					<div class='col-2 center'><a href='/web_settings_web.html'><button class='btn btn-sm btn-outline-primary' style='width:130px;'>WIFI&nbsp;&&nbsp;WEB</button></a></div>
 					<div class='col-2 center'><a href='/web_settings_widgets.html'><button class='btn btn-sm btn-outline-primary' style='width:130px;'>WIDGETS</button></a></div>
 					<div class='col-2 center'><a href='/web_settings_apps.html'><button class='btn btn-sm btn-outline-primary' style='width:130px;'>APPS</button></a></div>
-					<div class='col-3'>&nbsp;</div>
+					<div class='col-2 center'><a href='/web_settings_themes.html'><button class='btn btn-sm btn-outline-primary' style='width:130px;'>THEMES</button></a></div>
+					<div class='col-1'>&nbsp;</div>
 				</div>
 			</div>
 

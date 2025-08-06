@@ -26,7 +26,7 @@
 
 const char footer[] PROGMEM = R"rawliteral(
 		<div class="footer">
-			<span>TinyWATCH S3 - 2024 Unexpected Maker - %UPDATE_NOTICE%</span><br>
+			<span>TinyWATCH S3 - 2025 Unexpected Maker - %UPDATE_NOTICE%</span><br>
 			<span>Firmware Source available on <a href="https://github.com/tinywatch-s3" target="_blank">on GitHUB</a></span>
 			<span>&nbsp;&nbsp;<a href="/debug_logs.html">debug logs</a></span>
 		</div>
@@ -591,4 +591,52 @@ const char css_dark[] PROGMEM = R"rawliteral(
 	}
 
 </style>
+)rawliteral";
+
+const char web_form_dynamic_js[] PROGMEM = R"rawliteral(
+        <script>
+            document.addEventListener('submit', async function(event)
+            {
+                if (!event.target.classList.contains('ajax-settings-form')) return;
+                event.preventDefault();
+
+
+                const form = event.target;
+                const container = form.closest('.settings_group');
+                if (!container) return;
+
+                const formData = new FormData(form);
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    body: formData
+                });
+                const html = await response.text();
+
+                // Temporary div to parse the returned HTML
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = html;
+
+                // *** Use the id to reliably select the new container ***
+                const newContainer = tempDiv.querySelector('#' + container.id);
+
+                if (newContainer) {
+                    container.replaceWith(newContainer);
+
+                    // Flash logic:
+                    const flashSpan = newContainer.querySelector('.flash-span');
+                    if (flashSpan) {
+                        flashSpan.style.display = 'inline';
+                        flashSpan.classList.add('flash_post');
+                        setTimeout(function() {
+                            flashSpan.classList.remove('flash_post');
+                            flashSpan.style.display = 'none';
+                        }, 1000); // Duration
+                    }
+                } else {
+                    // If not found, do not replace, maybe show error
+                    alert("Failed to update: server did not return expected content for #" + container.id);
+                    console.log("Returned HTML:", html);
+                }
+            });
+		</script>
 )rawliteral";
